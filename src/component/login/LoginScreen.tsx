@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack'; // For navigation prop
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import colors from '../../constants/colors';
 import CheckBox from '@react-native-community/checkbox';
 import { StackParamList } from '../navigation/types';
@@ -30,11 +30,11 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
     <SafeAreaView style={styles.container}>
       <View style={styles.topSection}>
         <ImageBackground
-          source={require('../../asset/fashion.png')}
+          source={require('../../asset/ic_fashion.png')}
           style={styles.imagebackground}
           imageStyle={styles.backgroundImage}>
           <Image
-            source={require('../../asset/vector.png')}
+            source={require('../../asset/ic_vector.png')}
             style={styles.overlayImage}
           />
         </ImageBackground>

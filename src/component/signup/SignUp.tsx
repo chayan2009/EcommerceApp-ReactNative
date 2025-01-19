@@ -14,7 +14,6 @@ import { StackParamList } from '../navigation/types';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 type RegisterScreenNavigationProp = NativeStackNavigationProp<StackParamList, 'SignUp'>;
-
 interface RegisterScreenProps {
   navigation: RegisterScreenNavigationProp;
 }
@@ -31,7 +30,7 @@ const SignUp = ({ navigation }: RegisterScreenProps) => {
     <SafeAreaView style={styles.container}>
       <View style={styles.topSection}>
         <ImageBackground
-          source={require('../../asset/fashion.png')}
+          source={require('../../asset/ic_fashion.png')}
           style={styles.imagebackground}
           imageStyle={styles.backgroundImage} />
 
@@ -127,7 +126,7 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontFamily: 'bold',
     fontSize: 20,
-    top: '30%', // Adjusted for better alignment
+    top: '30%', 
     left: '10%',
   },
   subText: {
