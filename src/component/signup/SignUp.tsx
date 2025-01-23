@@ -10,21 +10,24 @@ import {
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import colors from '../../constants/colors';
-import { StackParamList } from '../navigation/types';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import {StackParamList} from '../navigation/types';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 
-type RegisterScreenNavigationProp = NativeStackNavigationProp<StackParamList, 'SignUp'>;
+type RegisterScreenNavigationProp = NativeStackNavigationProp<
+  StackParamList,
+  'SignUp'
+>;
 interface RegisterScreenProps {
   navigation: RegisterScreenNavigationProp;
 }
 
-const SignUp = ({ navigation }: RegisterScreenProps) => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+const SignUp = ({navigation}: RegisterScreenProps) => {
+  const [name, setName] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
 
   const handleRegister = () => {
-    navigation.replace('Home');
+    navigation.navigate('Home');
   };
   return (
     <SafeAreaView style={styles.container}>
@@ -32,13 +35,15 @@ const SignUp = ({ navigation }: RegisterScreenProps) => {
         <ImageBackground
           source={require('../../asset/ic_fashion.png')}
           style={styles.imagebackground}
-          imageStyle={styles.backgroundImage} />
+          imageStyle={styles.backgroundImage}
+        />
 
         <Icon
           name="arrow-back"
           size={30}
           color={colors.white}
           style={styles.backIcon}
+          onPress={() => navigation.goBack()}
         />
         <Text style={styles.headerText}>Get’s started with Geeta.</Text>
         <Text style={styles.subText}>Already have an account? Log in</Text>
@@ -89,7 +94,9 @@ const SignUp = ({ navigation }: RegisterScreenProps) => {
           </View>
         </View>
 
-        <TouchableOpacity onPress={()=>handleRegister()} style={styles.registerButton}>
+        <TouchableOpacity
+          onPress={() => handleRegister()}
+          style={styles.registerButton}>
           <Text style={styles.registerButtonText}>REGISTER</Text>
         </TouchableOpacity>
 
@@ -126,7 +133,7 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontFamily: 'bold',
     fontSize: 20,
-    top: '30%', 
+    top: '30%',
     left: '10%',
   },
   subText: {

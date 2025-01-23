@@ -21,10 +21,10 @@ interface LoginScreenProps {
   navigation: LoginScreenNavigationProp;
 }
 
-const LoginScreen = ({ navigation }: LoginScreenProps) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isRemembered, setIsRemembered] = useState(false);
+const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [isRemembered, setIsRemembered] = useState<boolean>(false);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -87,7 +87,7 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
           <View style={styles.rememberMe}>
             <CheckBox
               value={isRemembered}
-              onValueChange={newValue => setIsRemembered(newValue)}
+              onValueChange={(newValue: boolean) => setIsRemembered(newValue)}
               boxType="square"
               tintColors={{ true: colors.primary, false: colors.lightGray }}
               style={styles.checkbox}
@@ -101,7 +101,7 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
 
         <TouchableOpacity
           style={styles.loginButton}
-          onPress={() => navigation.replace('Signup')}
+          onPress={() => navigation.navigate('Signup')}
         >
           <Text style={styles.loginButtonText}>LOG IN</Text>
         </TouchableOpacity>

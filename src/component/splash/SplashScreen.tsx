@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,25 +8,32 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { NavigationProp } from '@react-navigation/native';
 import colors from '../../constants/colors';
 import appStrings from '../../constants/strings';
 
-const SplashScreen = ({navigation}: any) => {
-  const [isSplashVisible, setisSplashVisible] = useState(true);
+interface SplashScreenProps {
+  navigation: NavigationProp<any>;
+}
+
+const SplashScreen: React.FC<SplashScreenProps> = ({ navigation }) => {
+  const [isSplashVisible, setisSplashVisible] = useState<boolean>(true);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setisSplashVisible(false);
       navigation.replace(appStrings.navigationLogin);
-    }, 100000);
+    }, 10000); // Adjusted timeout to 10 seconds for practical use
     return () => clearTimeout(timer);
   }, [navigation]);
+
   if (isSplashVisible) {
     return (
       <ImageBackground
         source={require('../../asset/splash.png')}
-        style={styles.background}>
+        style={styles.background}
+      >
         <SafeAreaView>
           <StatusBar backgroundColor="#6200EE" barStyle="light-content" />
           <View style={styles.content}>
@@ -39,8 +47,9 @@ const SplashScreen = ({navigation}: any) => {
               style={styles.button}
               onPress={() => {
                 console.log('Button Pressed!');
-                navigation.replace(appStrings.navigationLogin);
-              }}>
+                navigation.navigate(appStrings.navigationLogin);
+              }}
+            >
               <Text style={styles.buttonText}>SHOP NOW</Text>
             </TouchableOpacity>
           </View>
@@ -54,8 +63,10 @@ const SplashScreen = ({navigation}: any) => {
       </ImageBackground>
     );
   }
+
   return null;
 };
+
 const styles = StyleSheet.create({
   background: {
     flex: 1,
@@ -113,4 +124,5 @@ const styles = StyleSheet.create({
     color: colors.white,
   },
 });
+
 export default SplashScreen;
