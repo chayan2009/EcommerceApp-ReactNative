@@ -23,8 +23,8 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ navigation }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setisSplashVisible(false);
-      navigation.replace(appStrings.navigationLogin);
-    }, 10000); // Adjusted timeout to 10 seconds for practical use
+      navigation.navigate(appStrings.navigationLogin);
+    }, 10000);
     return () => clearTimeout(timer);
   }, [navigation]);
 

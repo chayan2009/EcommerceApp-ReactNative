@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -8,12 +8,19 @@ import {
   Image,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useDispatch, useSelector } from 'react-redux';
+import { addToCart } from '../../redux/reducer/cartSlice';
+import { RootState } from '../../redux/store/store';
+import { fetchProducts } from '../../component/api/productApi';
 
 interface Product {
   id: number;
-  name: string;
+  title: string;
+  description: string;
   category: string;
   price: number;
+  thumbnail: string;
+  images: string[];
 }
 
 interface Props {
@@ -22,34 +29,33 @@ interface Props {
   };
 }
 
-const HomeScreen: React.FC<Props> = ({navigation}) => {
-  const allProducts: Product[] = [
-    {id: 1, name: 'Nike', category: 'Shoes', price: 23.2},
-    {id: 2, name: 'Reebok', category: 'Shoes', price: 23.2},
-    {id: 3, name: 'Fila', category: 'Shoes', price: 23.2},
-    {id: 4, name: 'Gucci', category: 'Bags', price: 123.5},
-    {id: 5, name: 'Chanel', category: 'Perfume', price: 78.9},
-    {id: 6, name: 'Levis', category: 'Clothing', price: 45.6},
-    {id: 7, name: 'Louis Vuitton', category: 'Bags', price: 150.3},
-    {id: 8, name: 'HRx', category: 'Shoes', price: 34.2},
-    {id: 9, name: 'Being Human', category: 'Clothing', price: 40.0},
-    {id: 10, name: 'Benton', category: 'Skincare', price: 22.5},
-    {id: 11, name: 'Dior', category: 'Perfume', price: 99.0},
-    {id: 12, name: 'Adidas', category: 'Shoes', price: 67.2},
-  ];
+const HomeScreen: React.FC<Props> = ({ navigation }) => {
+  const dispatch = useDispatch();
+  const cartItems = useSelector((state: RootState) => state.cart.items);
 
-  const categories: string[] = [
-    'All',
-    'Shoes',
-    'Bags',
-    'Clothing',
-    'Perfume',
-    'Skincare',
-  ];
-
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [filteredProducts, setFilteredProducts] =
-    useState<Product[]>(allProducts);
+  const [categories, setCategories] = useState<string[]>([]);
+
+  useEffect(() => {
+    const getProducts = async () => {
+      try {
+        const products = await fetchProducts();
+        setAllProducts(products);
+        setFilteredProducts(products); 
+
+        const uniqueCategories = [
+          'All',
+          ...new Set(products.map(product => product.category)),
+        ];
+        setCategories(uniqueCategories);
+      } catch (error) {
+        console.error('failed prodcuts:', error);
+      }
+    };
+    getProducts();
+  }, []);
 
   const handleCategorySelect = (category: string) => {
     setSelectedCategory(category);
@@ -62,24 +68,30 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
     }
   };
 
-  const renderItem = ({item}: {item: Product}) => (
+  const handleAddToCart = (item: Product) => {
+    dispatch(addToCart(item));
+    navigation.navigate('cart');
+  };
+
+  const renderItem = ({ item }: { item: Product }) => (
     <View style={styles.cardContainer}>
       <View style={styles.imageContainer}>
         <Image
-          source={{uri: 'https://via.placeholder.com/100'}}
+          source={{ uri: item.thumbnail }}
           style={styles.productImage}
+          resizeMode="contain"
         />
         <TouchableOpacity style={styles.favoriteIcon}>
           <Icon name="favorite-border" size={20} color="red" />
         </TouchableOpacity>
       </View>
       <View style={styles.detailsContainer}>
-        <Text style={styles.name}>{item.name}</Text>
+        <Text style={styles.name}>{item.title}</Text>
         <Text style={styles.category}>{item.category}</Text>
         <Text style={styles.price}>₹ {item.price.toFixed(2)}</Text>
         <TouchableOpacity
           style={styles.addButton}
-          onPress={() => navigation.navigate('cart')}>
+          onPress={() => handleAddToCart(item)}>
           <Text style={styles.addButtonText}>Add to Cart</Text>
         </TouchableOpacity>
       </View>
@@ -92,35 +104,33 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
       <View style={styles.toolbar}>
         <Text style={styles.text}>Geeta!!</Text>
         <View style={styles.iconContainer}>
-          <TouchableOpacity style={styles.iconButton}>
-            <Icon
-              name="search"
-              onPress={()=>navigation.navigate('search')}
-              size={24}
-              color="#0f0f10"
-            />
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => navigation.navigate('search')}>
+            <Icon name="search" size={24} color="#0f0f10" />
           </TouchableOpacity>
-          {/* <TouchableOpacity
-            onPress={()=>navigation.navigate('fav')}
-            style={styles.iconButton}>
-            <Icon name="favorite" size={24} color="#0f0f10" />
-          </TouchableOpacity> */}
-          <TouchableOpacity style={styles.iconButton}>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => navigation.navigate('cart')}>
             <Icon name="shopping-cart" size={24} color="#0f0f10" />
+            {cartItems.length > 0 && (
+              <View style={styles.cartCount}>
+                <Text style={styles.cartCountText}>{cartItems.length}</Text>
+              </View>
+            )}
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
-            <Icon name="menu" size={24} color="#0f0f10" />
+          <TouchableOpacity onPress={() => navigation.navigate('fav')} style={styles.iconButton}>
+            <Icon name="favorite-border" size={24} color="#0f0f10" />
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* Category Tabs */}
       <View style={styles.categoryTabs}>
         <FlatList
           horizontal
           data={categories}
           keyExtractor={item => item}
-          renderItem={({item}) => (
+          renderItem={({ item }) => (
             <TouchableOpacity
               key={item}
               style={[
@@ -140,22 +150,6 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
         />
       </View>
 
-      {/* Filter and Icons */}
-      <View style={styles.filterAndIcons}>
-        <TouchableOpacity style={styles.iconButton}>
-          <Icon name="filter-list" size={24} color="#6200EE" />
-        </TouchableOpacity>
-        <View style={styles.iconGroup}>
-          <TouchableOpacity style={styles.iconButton}>
-            <Icon name="grid-view" size={24} color="#6200EE" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
-            <Icon name="star" size={24} color="black" />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Product List */}
       <FlatList
         numColumns={2}
         data={filteredProducts}
@@ -202,12 +196,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f1f1f1',
     paddingVertical: 10,
     paddingHorizontal: 10,
-  },
-  filterAndIcons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 10,
-    marginBottom: 10,
   },
   tabButton: {
     paddingVertical: 5,
@@ -286,8 +274,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
   },
-  iconGroup: {
-    flexDirection: 'row',
+  cartCount: {
+    position: 'absolute',
+    top: -5,
+    right: -5,
+    backgroundColor: 'red',
+    borderRadius: 10,
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
     alignItems: 'center',
+  },
+  cartCountText: {
+    color: '#fff',
+    fontSize: 12,
   },
 });

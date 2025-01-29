@@ -32,7 +32,7 @@ const FavouriteScreen : React.FC<Props> = () => {
       const renderItem = ({item}: {item: favItem}) => (
         <View style={styles.itemCard}>
           <Image
-            source={{uri: 'https://via.placeholder.com/80'}}
+            source={{uri: 'https://dummyjson.com/image/150'}}
             style={styles.itemImage}
           />
           <View style={styles.itemDetails}>
