@@ -11,6 +11,7 @@ import CartScreen from './src/component/cart/CartScreen';
 import HomeScreen from './src/component/Home/HomeScreen';
 import FavouriteScreen from './src/component/favourite/FavouriteScreen';
 import SearchScreen from './src/component/search/SearchScreen';
+import DetailsScreen from './src/component/pdp/DetailsScreen';
 
 const Stack = createStackNavigator();
 
@@ -28,6 +29,7 @@ const App = () => {
           <Stack.Screen name="cart" component={CartScreen} />
           <Stack.Screen name="fav" component={FavouriteScreen} />
           <Stack.Screen name="search" component={SearchScreen} />
+          <Stack.Screen name="DetailsScreen" component={DetailsScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </Provider>

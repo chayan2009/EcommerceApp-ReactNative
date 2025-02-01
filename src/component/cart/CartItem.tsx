@@ -1,8 +1,9 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import { useDispatch } from 'react-redux';
-import { addToCart, removeFromCart } from '../../redux/reducer/cartSlice';
+import React, {useState} from 'react';
+import {View, Text, TouchableOpacity, StyleSheet, Image} from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import {useDispatch} from 'react-redux';
+import {addToCart, removeFromCart} from '../../redux/reducer/cartSlice';
+import colors from '../../constants/colors';
 
 interface CartItemProps {
   id: number;
@@ -10,7 +11,6 @@ interface CartItemProps {
   category: string;
   price: number;
   imageUrl: string;
-  quantity: number;
 }
 
 const CartItem: React.FC<CartItemProps> = ({
@@ -19,37 +19,54 @@ const CartItem: React.FC<CartItemProps> = ({
   category,
   price,
   imageUrl,
-  quantity,
 }) => {
   const dispatch = useDispatch();
+  const [quantity, setQuantity] = useState(1);
+
+  const increaseQuantity = () => setQuantity(quantity + 1);
+  const decreaseQuantity = () => {
+    if (quantity > 1) {
+      setQuantity(quantity - 1);
+    }
+  };
 
   const handleRemove = () => {
     dispatch(removeFromCart(id));
   };
 
-  const handleAdd = () => {
-    const newItem = { id, name, category, price, imageUrl, quantity: 1 };
-    dispatch(addToCart(newItem));
-  };
-
   return (
     <View style={styles.itemCard}>
+      <TouchableOpacity onPress={handleRemove} style={styles.removeButton}>
+        <Ionicons name="close" size={22} color="#d2c9c9" />
+      </TouchableOpacity>
+
       <Image
-        source={{ uri: imageUrl }}
+        source={require('../../asset/default.png')}
         style={styles.productImage}
         resizeMode="contain"
       />
+
       <View style={styles.itemDetails}>
         <Text style={styles.itemName}>{name}</Text>
         <Text style={styles.itemCategory}>{category}</Text>
-        <Text style={styles.itemPrice}>${price}</Text>
-        <View style={styles.actions}>
-          <TouchableOpacity style={styles.deleteButton} onPress={handleRemove}>
-            <Icon name="remove" size={25} color="white" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.addButton} onPress={handleAdd}>
-            <Icon name="add" size={25} color="white" />
-          </TouchableOpacity>
+
+        <View style={styles.actionsRow}>
+          <Text style={styles.itemPrice}>₹ {price.toFixed(2)}</Text>
+
+          {/* Quantity Control */}
+          <View style={styles.quantityCard}>
+            <TouchableOpacity
+              onPress={decreaseQuantity}
+              style={styles.quantityButton}>
+              <Ionicons name="remove" size={18} color="white" />
+            </TouchableOpacity>
+            <Text style={styles.quantityText}>{quantity}</Text>
+            <TouchableOpacity
+              onPress={increaseQuantity}
+              style={styles.quantityButton}>
+              <Ionicons name="add" size={18} color="white" />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </View>
@@ -61,55 +78,70 @@ export default CartItem;
 const styles = StyleSheet.create({
   itemCard: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    marginVertical: 12,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 10,
+    marginVertical: 10,
+    marginHorizontal: 10,
     padding: 15,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 6,
-    elevation: 3,
     alignItems: 'center',
+    position: 'relative',
+    elevation: 3,
+  },
+  removeButton: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    padding: 5,
+    zIndex: 1,
   },
   productImage: {
-    width: 90,
-    height: 90,
+    width: 70,
+    height: 70,
     borderRadius: 12,
-    marginRight: 15,
+    marginRight: 10,
   },
   itemDetails: {
     flex: 1,
   },
   itemName: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
   },
   itemCategory: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#777',
+    marginBottom: 5,
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 10,
   },
   itemPrice: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#6200EE',
-    marginTop: 5,
   },
-  actions: {
+  quantityCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 10, // Adds spacing between the price and the action buttons
+    backgroundColor: '#E0E0E0',
+    borderRadius: 15,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
   },
-  deleteButton: {
-    backgroundColor: '#FF6F61',
-    padding: 5,
-    borderRadius: 30,
-    marginRight: 10,
+  quantityButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
-  addButton: {
-    backgroundColor: '#4CAF50',
-    padding: 5,
-    borderRadius: 30,
+  quantityText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.black,
+    marginHorizontal: 10,
   },
 });

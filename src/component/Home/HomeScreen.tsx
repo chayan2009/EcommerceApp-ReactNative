@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -6,12 +6,13 @@ import {
   TouchableOpacity,
   FlatList,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { useDispatch, useSelector } from 'react-redux';
-import { addToCart } from '../../redux/reducer/cartSlice';
-import { RootState } from '../../redux/store/store';
-import { fetchProducts } from '../../component/api/productApi';
+import {useDispatch, useSelector} from 'react-redux';
+import {addToCart} from '../../redux/reducer/cartSlice';
+import {RootState} from '../../redux/store/store';
+import {fetchProducts} from '../../component/api/productApi';
 
 interface Product {
   id: number;
@@ -29,7 +30,7 @@ interface Props {
   };
 }
 
-const HomeScreen: React.FC<Props> = ({ navigation }) => {
+const HomeScreen: React.FC<Props> = ({navigation}) => {
   const dispatch = useDispatch();
   const cartItems = useSelector((state: RootState) => state.cart.items);
 
@@ -37,20 +38,22 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [categories, setCategories] = useState<string[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const getProducts = async () => {
       try {
         const products = await fetchProducts();
         setAllProducts(products);
-        setFilteredProducts(products); 
-
+        setFilteredProducts(products);
+        setLoading(false);
         const uniqueCategories = [
           'All',
           ...new Set(products.map(product => product.category)),
         ];
         setCategories(uniqueCategories);
       } catch (error) {
+        setLoading(false);
         console.error('failed prodcuts:', error);
       }
     };
@@ -61,41 +64,57 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
     setSelectedCategory(category);
     if (category === 'All') {
       setFilteredProducts(allProducts);
+      setLoading(false);
     } else {
       setFilteredProducts(
         allProducts.filter(product => product.category === category),
       );
+      setLoading(false);
     }
   };
 
   const handleAddToCart = (item: Product) => {
-    dispatch(addToCart(item));
-    navigation.navigate('cart');
+    const newItem = {
+      id: item.id,
+      name: item.title,
+      category: item.category,
+      price: item.price,
+      imageUrl: item.thumbnail,
+      quantity: 1,
+    };
+    dispatch(addToCart(newItem));
+    navigation.navigate('Cart');
   };
 
-  const renderItem = ({ item }: { item: Product }) => (
-    <View style={styles.cardContainer}>
-      <View style={styles.imageContainer}>
-        <Image
-          source={{ uri: item.thumbnail }}
-          style={styles.productImage}
-          resizeMode="contain"
-        />
-        <TouchableOpacity style={styles.favoriteIcon}>
-          <Icon name="favorite-border" size={20} color="red" />
-        </TouchableOpacity>
+  const renderItem = ({item}: {item: Product}) => (
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => navigation.navigate('DetailsScreen', {product: item})}>
+      <View style={styles.cardContainer}>
+        <View style={styles.imageContainer}>
+          <Image
+            source={{uri: item.thumbnail}}
+            style={styles.productImage}
+            resizeMode="contain"
+          />
+          <TouchableOpacity style={styles.favoriteIcon}>
+            <Icon name="favorite-border" size={20} color="red" />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.detailsContainer}>
+          <Text style={styles.name} numberOfLines={1}>
+            {item.title}
+          </Text>
+          <Text style={styles.category}>{item.category}</Text>
+          <Text style={styles.price}>₹ {item.price.toFixed(2)}</Text>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => handleAddToCart(item)}>
+            <Text style={styles.addButtonText}>Add to Cart</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-      <View style={styles.detailsContainer}>
-        <Text style={styles.name}>{item.title}</Text>
-        <Text style={styles.category}>{item.category}</Text>
-        <Text style={styles.price}>₹ {item.price.toFixed(2)}</Text>
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => handleAddToCart(item)}>
-          <Text style={styles.addButtonText}>Add to Cart</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -119,35 +138,45 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
               </View>
             )}
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('fav')} style={styles.iconButton}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('fav')}
+            style={styles.iconButton}>
             <Icon name="favorite-border" size={24} color="#0f0f10" />
           </TouchableOpacity>
         </View>
       </View>
 
       <View style={styles.categoryTabs}>
-        <FlatList
-          horizontal
-          data={categories}
-          keyExtractor={item => item}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              key={item}
-              style={[
-                styles.tabButton,
-                selectedCategory === item && styles.activeTabButton,
-              ]}
-              onPress={() => handleCategorySelect(item)}>
-              <Text
+        {loading ? (
+          <ActivityIndicator
+            size="large"
+            color="#6200EE"
+            style={styles.loader}
+          />
+        ) : (
+          <FlatList
+            horizontal
+            data={categories}
+            keyExtractor={item => item}
+            renderItem={({item}) => (
+              <TouchableOpacity
+                key={item}
                 style={[
-                  styles.tabText,
-                  selectedCategory === item && styles.activeTabText,
-                ]}>
-                {item}
-              </Text>
-            </TouchableOpacity>
-          )}
-        />
+                  styles.tabButton,
+                  selectedCategory === item && styles.activeTabButton,
+                ]}
+                onPress={() => handleCategorySelect(item)}>
+                <Text
+                  style={[
+                    styles.tabText,
+                    selectedCategory === item && styles.activeTabText,
+                  ]}>
+                  {item}
+                </Text>
+              </TouchableOpacity>
+            )}
+          />
+        )}
       </View>
 
       <FlatList
@@ -167,6 +196,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  card: {
+    flex: 1,
+    padding: 5,
   },
   toolbar: {
     flexDirection: 'row',
@@ -215,6 +248,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
+  loader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%',
+  },
   flatListContainer: {
     padding: 10,
   },
@@ -233,15 +272,13 @@ const styles = StyleSheet.create({
   productImage: {
     width: 100,
     height: 100,
-    borderRadius: 50,
+    borderRadius: 80,
   },
   favoriteIcon: {
     position: 'absolute',
-    top: 5,
     right: 5,
-    backgroundColor: '#fff',
     borderRadius: 10,
-    padding: 3,
+    padding: 0,
   },
   detailsContainer: {
     alignItems: 'center',

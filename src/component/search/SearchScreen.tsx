@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -6,74 +6,117 @@ import {
   FlatList,
   Image,
   TextInput,
+  TouchableOpacity,
 } from 'react-native';
-
-interface SearchItem {
-  id: number;
-  name: string;
-  category: string;
-  price: number;
-}
+import {fetchProducts} from '../api/productApi';
+import colors from '../../constants/colors';
+import CheckoutButton from '../../utils/CheckoutButton';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import {ActivityIndicator} from 'react-native';
 
 interface Props {
   navigation: {
     navigate: (screen: string, params?: any) => void;
+    goBack: () => void;
   };
 }
 
-const SearchScreen: React.FC<Props> = ({ navigation }) => {
+interface Product {
+  id: number;
+  title: string;
+  description: string;
+  category: string;
+  price: number;
+  thumbnail: string;
+  images: string[];
+}
+
+const SearchScreen: React.FC<Props> = ({navigation}) => {
   const [searchText, setSearchText] = React.useState('');
-  const [numColumns, setNumColumns] = React.useState(2); // Default number of columns
+  const [numColumns, setNumColumns] = React.useState(2);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  const allsearchResults: SearchItem[] = [
-    { id: 1, name: 'Nike', category: 'Shoes', price: 23.2 },
-    { id: 2, name: 'Reebok', category: 'Shoes', price: 23.2 },
-    { id: 3, name: 'Fila', category: 'Shoes', price: 23.2 },
-    { id: 4, name: 'Gucci', category: 'Bags', price: 123.5 },
-    { id: 5, name: 'Chanel', category: 'Perfume', price: 78.9 },
-    { id: 6, name: 'Levis', category: 'Clothing', price: 45.6 },
-    { id: 7, name: 'Louis Vuitton', category: 'Bags', price: 150.3 },
-    { id: 8, name: 'HRx', category: 'Shoes', price: 34.2 },
-    { id: 9, name: 'Being Human', category: 'Clothing', price: 40.0 },
-    { id: 10, name: 'Benton', category: 'Skincare', price: 22.5 },
-    { id: 11, name: 'Dior', category: 'Perfume', price: 99.0 },
-    { id: 12, name: 'Adidas', category: 'Shoes', price: 67.2 },
-  ];
+  useEffect(() => {
+    const getProducts = async () => {
+      try {
+        const products = await fetchProducts();
+        setAllProducts(products);
+        setLoading(false);
+      } catch (error) {
+        setLoading(false);
+        console.log('Failed to fetch products:', error);
+      }
+    };
+    getProducts();
+  }, []);
 
-  const filteredResults = allsearchResults.filter(item =>
-    item.name.toLowerCase().includes(searchText.toLowerCase())
+  const filteredResults = allProducts.filter(item =>
+    item.title.toLowerCase().includes(searchText.toLowerCase()),
   );
 
-  const renderItem = ({ item }: { item: SearchItem }) => (
-    <View style={styles.cardContainer}>
-      <Image
-        source={{ uri: 'https://via.placeholder.com/100' }}
-        style={styles.productImage}
-      />
-      <Text style={styles.name}>{item.name}</Text>
-      <Text style={styles.price}>₹ {item.price.toFixed(2)}</Text>
-    </View>
+  const renderItem = ({item}: {item: Product}) => (
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => navigation.navigate('DetailsScreen', {product: item})}>
+      <View style={styles.cardContainer}>
+        <Image source={{uri: item.thumbnail}} style={styles.productImage} />
+        <TouchableOpacity style={styles.favoriteIcon}>
+          <Icon name="favorite-border" size={20} color="red" />
+        </TouchableOpacity>
+      </View>
+      <View style={styles.priceWrapper}>
+        <Text style={styles.name} numberOfLines={1}>
+          {item.title}
+        </Text>
+        <Text style={styles.price}>₹ {item.price.toFixed(2)}</Text>
+      </View>
+    </TouchableOpacity>
   );
 
   return (
     <View style={styles.container}>
       <View style={styles.toolbar}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color="#6200EE" />
+        </TouchableOpacity>
         <Text style={styles.toolbarText}>Find Products</Text>
       </View>
+
       <TextInput
         style={styles.searchBar}
         placeholder="Search products"
         value={searchText}
         onChangeText={setSearchText}
       />
-      <FlatList
+
+      {loading ? (
+        <ActivityIndicator size="large" color="#6200EE" style={styles.loader} />
+      ) : (
+        <FlatList
         data={filteredResults}
         keyExtractor={item => item.id.toString()}
         key={numColumns.toString()}
         renderItem={renderItem}
         numColumns={numColumns}
         contentContainerStyle={styles.flatListContainer}
-      />
+        />
+      )}
+      {/* <FlatList
+        data={filteredResults}
+        keyExtractor={item => item.id.toString()}
+        key={numColumns.toString()}
+        renderItem={renderItem}
+        numColumns={numColumns}
+        contentContainerStyle={styles.flatListContainer}
+      /> */}
+
+      <View>
+        <CheckoutButton />
+      </View>
     </View>
   );
 };
@@ -87,52 +130,82 @@ const styles = StyleSheet.create({
   },
   toolbar: {
     flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 20,
     backgroundColor: '#f2ebeb',
   },
+  backButton: {
+    position: 'absolute',
+    left: 10,
+  },
   toolbarText: {
+    flex: 1,
+    textAlign: 'center',
     fontSize: 18,
-    color: '#6200EE',
+    color: colors.primary,
     fontWeight: 'bold',
   },
   searchBar: {
     height: 40,
     margin: 10,
-    paddingHorizontal: 10,
+    paddingHorizontal: 20,
     borderColor: '#ccc',
     borderWidth: 1,
-    borderRadius: 30,
-    backgroundColor: '#f9f9f9',
+    borderRadius: 20,
+    color: colors.primary,
   },
   flatListContainer: {
-    paddingHorizontal: 10,
-    paddingBottom: 20,
+    paddingHorizontal: 5,
+  },
+  card: {
+    flex: 1,
+    padding: 5,
   },
   cardContainer: {
-    flex: 1,
     alignItems: 'center',
     backgroundColor: '#f9f9f9',
+    margin: 8,
+    borderRadius: 20,
+    padding: 60,
+    elevation: 3,
+  },
+  favoriteIcon: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
     borderRadius: 10,
-    margin: 5,
-    padding: 10,
-    elevation: 2,
+    padding: 3,
+  },
+  priceWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 10,
+    marginTop: 5,
+  },
+  loader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%',
   },
   productImage: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    marginBottom: 10,
   },
   name: {
-    fontSize: 16,
+    flex: 0.7,
+    fontSize: 12,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 5,
+    color: colors.primary,
   },
   price: {
-    fontSize: 14,
+    flex: 0.3,
+    fontSize: 12,
+    fontWeight: 'bold',
     color: '#6200EE',
   },
 });

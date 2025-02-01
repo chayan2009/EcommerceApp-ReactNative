@@ -1,58 +1,92 @@
-import {View, Text, StyleSheet, FlatList, Image} from 'react-native';
-import React from 'react';
+import { View, Text, StyleSheet, FlatList, Image, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { fetchProducts } from '../api/productApi';
+import Ionicons from 'react-native-vector-icons/Ionicons'; // Import Ionicons
+import CheckoutButton from '../../utils/CheckoutButton';
+import { TouchableOpacity } from 'react-native';
 
-interface favItem {
-    id: number;
-    name: string;
-    category: string;
-    price: number;
-  }
-  interface Props {
-    navigation: {
-      navigate: (screen: string, params?: any) => void;
+interface Product {
+  id: number;
+  title: string;
+  description: string;
+  category: string;
+  price: number;
+  thumbnail: string;
+  images: string[];
+}
+
+interface Props {
+  navigation: {
+    goBack(): void;
+    navigate: (screen: string, params?: any) => void;
+  };
+}
+
+const FavouriteScreen: React.FC<Props> = ({ navigation }) => {
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const getProducts = async () => {
+      try {
+        const products = await fetchProducts();
+        setAllProducts(products);
+        setLoading(false); // Set loading to false after data is fetched
+      } catch (error) {
+        console.log('Fetch error:', error);
+        setLoading(false); // Set loading to false in case of error
+      }
     };
-  }
+    getProducts();
+  }, []);
 
-const FavouriteScreen : React.FC<Props> = () => {
-    const favItems: favItem[] = [
-        {id: 1, name: 'Nike', category: 'Shoes', price: 23.2},
-        {id: 2, name: 'Reebok', category: 'Shoes', price: 23.2},
-        {id: 3, name: 'Fila', category: 'Shoes', price: 23.2},
-        {id: 4, name: 'Gucci', category: 'Bags', price: 123.5},
-        {id: 5, name: 'Chanel', category: 'Perfume', price: 78.9},
-        {id: 6, name: 'Levis', category: 'Clothing', price: 45.6},
-        {id: 7, name: 'Louis Vuitton', category: 'Bags', price: 150.3},
-        {id: 8, name: 'HRx', category: 'Shoes', price: 34.2},
-        {id: 9, name: 'Being Human', category: 'Clothing', price: 40.0},
-        {id: 10, name: 'Benton', category: 'Skincare', price: 22.5},
-        {id: 11, name: 'Dior', category: 'Perfume', price: 99.0},
-        {id: 12, name: 'Adidas', category: 'Shoes', price: 67.2},
-      ];
-
-      const renderItem = ({item}: {item: favItem}) => (
-        <View style={styles.itemCard}>
-          <Image
-            source={{uri: 'https://dummyjson.com/image/150'}}
-            style={styles.itemImage}
-          />
-          <View style={styles.itemDetails}>
-            <Text style={styles.itemName}>{item.name}</Text>
-            <Text style={styles.itemCategory}>{item.category}</Text>
+  const renderItem = ({ item }: { item: Product }) => (
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => navigation.navigate('DetailsScreen', { product: item })}>
+      <View style={styles.itemCard}>
+        <Image source={{ uri: item.thumbnail }} style={styles.itemImage} />
+        <View style={styles.itemDetails}>
+          <View style={styles.row}>
+            <Text style={styles.itemName} numberOfLines={1}>
+              {item.title}
+            </Text>
             <Text style={styles.itemPrice}>₹ {item.price.toFixed(2)}</Text>
           </View>
+          <View style={styles.row}>
+            <Text style={styles.itemCategory}>{item.category}</Text>
+          </View>
+          <View style={styles.row1}>
+            <Ionicons name="chevron-forward" size={20} color="#6200EE" />
+          </View>
         </View>
-      );
+      </View>
+    </TouchableOpacity>
+  );
+
   return (
     <View style={styles.container}>
       <View style={styles.toolbar}>
-        <Text style={styles.toolbarText}>Favourite</Text>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color="#6200EE" />
+        </TouchableOpacity>
+        <Text style={styles.toolbarText}>Find Products</Text>
       </View>
       <View style={styles.flatListContainer}>
-        <FlatList
-          data={favItems}
-          keyExtractor={item => item.id.toString()}
-          renderItem={renderItem}
-        />
+        {loading ? (
+          <ActivityIndicator size="large" color="#6200EE" style={styles.loader} />
+        ) : (
+          <FlatList
+            data={allProducts}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderItem}
+          />
+        )}
+      </View>
+      <View>
+        <CheckoutButton />
       </View>
     </View>
   );
@@ -60,102 +94,86 @@ const FavouriteScreen : React.FC<Props> = () => {
 
 export default FavouriteScreen;
 
-
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: '#fff',
-    },
-    toolbar: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      paddingHorizontal: 20,
-      paddingVertical: 10,
-      backgroundColor: '#f2ebeb',
-    },
-    toolbarText: {
-      fontSize: 18,
-      alignItems: 'center',
-      justifyContent: 'center',
-      color: '#6200EE',
-    },
-    iconContainer: {
-      flexDirection: 'row',
-      width: 120,
-      justifyContent: 'space-between',
-    },
-    iconButton: {
-      padding: 5,
-    },
-    flatListContainer: {
-      flex: 1,
-      padding: 10,
-    },
-    title: {
-      fontSize: 18,
-      color: '#6200EE',
-      marginBottom: 10,
-    },
-    itemCard: {
-      flexDirection: 'row',
-      backgroundColor: '#f9f9f9',
-      borderRadius: 10,
-      marginVertical: 10,
-      padding: 10,
-      alignItems: 'center',
-      position: 'relative',
-    },
-    deleteButton: {
-      position: 'absolute',
-      top: 10,
-      right: 10,
-      zIndex: 1,
-    },
-    itemImage: {
-      width: 80,
-      height: 80,
-      borderRadius: 10,
-      marginRight: 10,
-    },
-    itemDetails: {
-      flex: 1,
-    },
-    itemName: {
-      fontSize: 18,
-      fontWeight: 'bold',
-      marginBottom: 5,
-    },
-    itemCategory: {
-      fontSize: 14,
-      color: 'gray',
-      marginBottom: 5,
-    },
-    itemPrice: {
-      fontSize: 16,
-      color: '#6200EE',
-      marginBottom: 10,
-    },
-    quantityControls: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    controlButton: {
-      width: 30,
-      height: 30,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: '#6200EE',
-      borderRadius: 15,
-      marginHorizontal: 5,
-    },
-    controlButtonText: {
-      color: '#fff',
-      fontSize: 18,
-      fontWeight: 'bold',
-    },
-    quantityText: {
-      fontSize: 16,
-      fontWeight: 'bold',
-    },
-  });
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  card: {
+    flex: 1,
+    padding: 5,
+  },
+  toolbar: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    backgroundColor: '#f2ebeb',
+  },
+  toolbarText: {
+    fontSize: 18,
+    color: '#6200EE',
+    fontWeight: 'bold',
+  },
+  flatListContainer: {
+    flex: 1,
+  },
+  loader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%',
+  },
+  itemCard: {
+    flexDirection: 'row',
+    backgroundColor: '#f9f9f9',
+    borderRadius: 10,
+    marginVertical: 5,
+    marginHorizontal: 5,
+    padding: 10,
+    alignItems: 'center',
+    position: 'relative',
+    elevation: 3,
+  },
+  itemImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 10,
+    marginRight: 10,
+  },
+  itemDetails: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  row1: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  itemName: {
+    flex: 0.7,
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#6342E8',
+  },
+  itemPrice: {
+    flex: 0.3,
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#6200EE',
+    textAlign: 'right',
+  },
+  itemCategory: {
+    fontSize: 14,
+    color: 'gray',
+  },
+  backButton: {
+    position: 'absolute',
+    left: 20,
+  },
+});
