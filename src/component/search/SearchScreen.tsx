@@ -34,7 +34,7 @@ interface Product {
 
 const SearchScreen: React.FC<Props> = ({navigation}) => {
   const [searchText, setSearchText] = React.useState('');
-  const [numColumns, setNumColumns] = React.useState(2);
+  const [numColumns] = React.useState(2);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -105,15 +105,6 @@ const SearchScreen: React.FC<Props> = ({navigation}) => {
         contentContainerStyle={styles.flatListContainer}
         />
       )}
-      {/* <FlatList
-        data={filteredResults}
-        keyExtractor={item => item.id.toString()}
-        key={numColumns.toString()}
-        renderItem={renderItem}
-        numColumns={numColumns}
-        contentContainerStyle={styles.flatListContainer}
-      /> */}
-
       <View>
         <CheckoutButton />
       </View>

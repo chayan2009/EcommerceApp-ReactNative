@@ -2,24 +2,18 @@ import React, {useState} from 'react';
 import {View, Text, TouchableOpacity, StyleSheet, Image} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useDispatch} from 'react-redux';
-import {addToCart, removeFromCart} from '../../redux/reducer/cartSlice';
+import {removeFromCart} from '../../redux/reducer/cartSlice';
 import colors from '../../constants/colors';
 
-interface CartItemProps {
+interface Product {
   id: number;
-  name: string;
+  title: string;
   category: string;
   price: number;
-  imageUrl: string;
+  thumbnail: string;
 }
 
-const CartItem: React.FC<CartItemProps> = ({
-  id,
-  name,
-  category,
-  price,
-  imageUrl,
-}) => {
+const CartItem: React.FC<Product> = ({id, title, category, price, thumbnail}) => {
   const dispatch = useDispatch();
   const [quantity, setQuantity] = useState(1);
 
@@ -36,34 +30,30 @@ const CartItem: React.FC<CartItemProps> = ({
 
   return (
     <View style={styles.itemCard}>
+      {/* Remove Item Button */}
       <TouchableOpacity onPress={handleRemove} style={styles.removeButton}>
         <Ionicons name="close" size={22} color="#d2c9c9" />
       </TouchableOpacity>
 
-      <Image
-        source={require('../../asset/default.png')}
-        style={styles.productImage}
-        resizeMode="contain"
-      />
+      {/* Product Image */}
+      <Image source={{uri: thumbnail}} style={styles.productImage} resizeMode="contain" />
 
+      {/* Item Details */}
       <View style={styles.itemDetails}>
-        <Text style={styles.itemName}>{name}</Text>
+        <Text style={styles.itemName}>{title}</Text>
         <Text style={styles.itemCategory}>{category}</Text>
 
+        {/* Price & Quantity */}
         <View style={styles.actionsRow}>
           <Text style={styles.itemPrice}>₹ {price.toFixed(2)}</Text>
 
           {/* Quantity Control */}
           <View style={styles.quantityCard}>
-            <TouchableOpacity
-              onPress={decreaseQuantity}
-              style={styles.quantityButton}>
+            <TouchableOpacity onPress={decreaseQuantity} style={styles.quantityButton}>
               <Ionicons name="remove" size={18} color="white" />
             </TouchableOpacity>
             <Text style={styles.quantityText}>{quantity}</Text>
-            <TouchableOpacity
-              onPress={increaseQuantity}
-              style={styles.quantityButton}>
+            <TouchableOpacity onPress={increaseQuantity} style={styles.quantityButton}>
               <Ionicons name="add" size={18} color="white" />
             </TouchableOpacity>
           </View>
@@ -133,7 +123,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   quantityButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.primary || '#6200EE', // Fallback to primary color
     borderRadius: 10,
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -141,7 +131,7 @@ const styles = StyleSheet.create({
   quantityText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: colors.black,
+    color: '#000',
     marginHorizontal: 10,
   },
 });

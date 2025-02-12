@@ -76,6 +76,7 @@ const FavouriteScreen: React.FC<Props> = ({ navigation }) => {
       </View>
       <View style={styles.flatListContainer}>
         {loading ? (
+          // Show loading indicator when data is being fetched
           <ActivityIndicator size="large" color="#6200EE" style={styles.loader} />
         ) : (
           <FlatList

@@ -24,7 +24,7 @@ const CartScreen = ({navigation}) => {
           style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#6200EE" />
         </TouchableOpacity>
-        <Text style={styles.toolbarText}>Find Products</Text>
+        <Text style={styles.toolbarText}>Carts</Text>
       </View>{' '}
       {cartItems.length === 0 ? (
         <Text style={styles.emptyCartText}>Your cart is empty</Text>
